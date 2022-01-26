@@ -1,30 +1,31 @@
 'use strict';
 
-const eventPool = require("./eventPool");
+const socketioClient = require('socket.io-client');
+const homesocket = socketioClient.connect('http://localhost:3000');
+const caps = socketioClient.connect('http://localhost:3000/caps');
 
-eventPool.on('pickup', handleInTransit) // listens for a pickup event
 
-function handleInTransit(payload) {
-    setInterval(() => {
-        // Log a message to the console: DRIVER: picked up <ORDER_ID>.
-        console.log(payload.driver + ": picked up order ID:" + payload.order_id);
-        // Emit an ‘in-transit’ event to the Global Event Pool with the order payload.
-        eventPool.emit('in-transit', { payload });
-        
-      }, 2000, handleDelivered);
-}
+// Confirm connect
+homesocket.on('welcome', payload => {
+    console.log(payload);
+  });
 
-function handleDelivered(payload) {
-setInterval(() => {
-    // Emit an ‘delivered’ event to the Global Event Pool with the order payload.
-    eventPool.emit('delivered', { payload });
-    // Log a confirmation message to the console: DRIVER: delivered <ORDER_ID>
-    console.log(payload.driver + ": delivered order ID: " + payload.order_id);
-  }, 2000);
+// Each Driver will “pick up” a package when the vendor notifies the Server that an “order” is ready and simulate “in-transit” and “delivered” events.
 
-}
+// As a driver, I want to be notified when there is a package to be delivered.
 
-module.exports = {
-    handleInTransit,
-    handleDelivered
-};
+caps.on('capspickup', (payload) => {
+console.log('Driver Log: Pickup achieved from ' + payload.store);
+console.log('Driver Log: with OrderID ' + payload.orderID);
+//console.log(payload);
+
+// As a driver, I want to alert the system when I have picked up a package and it is in transit.
+caps.emit('in-transit', payload);
+console.log('Driver Log: Delivery in-transit.')
+
+// As a driver, I want to alert the system when a package has been delivered.
+caps.emit('delivered', "Driver Log: Delivery complete.");
+console.log('Driver Log: Delivered.')
+});
+
+

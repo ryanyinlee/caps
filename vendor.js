@@ -1,46 +1,70 @@
 'use strict';
 
-const eventPool = require("./eventPool");
+const socketioClient = require('socket.io-client');
+const homesocket = socketioClient.connect('http://localhost:3000');
+const caps = socketioClient.connect('http://localhost:3000/caps');
 
-// For these, the client.js will be the app that runs constantly, monitoring and handling events. They’ll use the queue.js to subscribe to the hub server using a common library
-
-// Client applications will “subscribe” to the hub server’s queue for a given event. Subscribing means that the client intends for the hub server to save all messages until the client confirms receipt. Subscribing through the queue library should look like this:
-
-// Your implementation should use a store name as a parameter.
 let storeName = "circuit city";
-let order_id = "12345"
+let orderID = "12345"
 let customer = "james washington"
 let address = "papua new guinea"
 
-const payload = {
+let time = new Date();
+
+const pickupOrder1 = {
   "store": storeName,
-  "orderID": order_id,
+  "orderID": orderID,
   "customer": customer,
   "address": address,
 };
 
-console.log(payload);
-
-// simulates a pickup event
-function simulatePickup() {
-setInterval(() => {  
-  // Log a message to the console: DRIVER: picked up <ORDER_ID>.
-  console.log(payload.customer + ": picked up order ID:" + payload.order_id);
-}, 6000);
-  // emits pickup to the global event pool.
-  eventPool.emit('delivered', handleDelivery)
-}
-
-
-  function handleDelivery(payload) {
-    console.log('Thank you, ' + payload.store);
-  }
-
- 
-  module.exports = {
-    simulatePickup,
-    handleDelivery,
+const EVENT = {
+  "event": "eventType",
+  "time": time,
+  "payload": pickupOrder1
 };
 
+let driverPayload = {};
 
- 
+// console.log("EVENT ")
+// console.log(EVENT);
+
+console.log('vendor.js is active'); // for nodemon
+
+// Each Vendor will only emit and listen for specific events based on their Vendor ID. This will be managed by rooms within Socket.io.
+
+
+// Confirm connect
+homesocket.on('welcome', payload => {
+  console.log(payload);
+});
+
+// As a vendor, I want to alert the system when I have a package to be picked up.
+
+// pickup simulation listen and emit
+caps.on('pickupconnection', () => {
+  console.log('Vendor Log: Caps pickup simulation activated.')
+  caps.emit('capspickup', pickupOrder1)
+});
+
+// Let server know 
+caps.on('vendorshipmentinfo', (pickupOrder1) => {
+  console.log('Vendor Log: shipment info sent to server');
+  caps.emit('12345', pickupOrder1);
+  driverPayload = pickupOrder1;
+});
+
+  // As a vendor, I want to be notified when my package has been delivered.
+  caps.on('capsdelivery', (payload) => {
+    console.log('Delivery with orderID: ' + payload.orderID +  ' achieved via CAPS.');
+    
+    handleDelivery();
+  });
+
+  function handleDelivery(driverPayload) {
+    console.log('Thank you, ' + driverPayload);
+  }
+
+
+
+

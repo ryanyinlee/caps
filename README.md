@@ -138,7 +138,11 @@ Testing Note - *The “event system” in Node.js has already been tested. What 
 
 ![](lab11phase01uml.PNG)
 
+### Phase 2 UML
+
+![](lab12phase02uml.PNG)
+
 
 ### Credit
 
-Help from jamiguel and eriksavage
+Help from jamiguel and eriksavage and metty82
