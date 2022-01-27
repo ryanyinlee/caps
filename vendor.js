@@ -1,5 +1,7 @@
 'use strict';
 
+// npm install @faker-js/faker
+
 const socketioClient = require('socket.io-client');
 const homesocket = socketioClient.connect('http://localhost:3000');
 const caps = socketioClient.connect('http://localhost:3000/caps');
