@@ -29,3 +29,7 @@ console.log('Driver Log: Delivered.')
 });
 
 
+caps.emit('getPayloads');
+caps.on('getPayloads', payload => {
+  console.log(payload);
+});
